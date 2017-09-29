@@ -41,32 +41,49 @@
            (
               select country_destination as country, count(*) as cnt_book
               from air_user
-              where date_first_booking is not null
+              where date_first_booking is not null and gender not in ('OTHER')
               group by country_destination
            )
            order by book_ratio desc;
 
 
          -- conversion rate dependent on country and gender
-         select a.country, a.gender, round( ( a.cnt_book / b.country_total ),2 ) as booking_ratio
+         select *
          from
          (
-            select country_destination as country, gender, count(*) as cnt_book
+           select a.country, a.gender, round( ( a.cnt_book / b.country_total ),2 ) as booking_ratio
+           from
+           (
+              select country_destination as country, gender, count(*) as cnt_book
+                from air_user
+                where date_first_booking is not null and gender not in ('OTHER')
+                group by country_destination, gender
+           ) a
+           inner join
+           (
+            select country_destination as country, count(country_destination) as country_total
+              from air_user
+              group by country_destination
+           ) b
+           on a.country = b. country
+         )
+         pivot( sum(booking_ratio) for gender in ('MALE','FEMALE','-unknown-'));
+
+
+      	--GENDER 별로 해서 UNION ALL
+
+        select country,  round( (cnt_book / (select count(*) from air_user)), 2) as book_ratio
+           from
+           (
+              select country_destination as country, count(*) as cnt_book
               from air_user
               where date_first_booking is not null and gender not in ('OTHER')
-              group by country_destination, gender
-         ) a
-         inner join
-         (
-          select country_destination as country, count(country_destination) as country_total
-            from air_user
-            group by country_destination
-         ) b
-         on a.country = b. country;
+              group by country_destination
+           )
+           order by book_ratio desc;
 
-         --1 unknown을 어떻게 처리할지 결정해야함
-         pivot (
-           ;
+
+
 
 
            select count(*) from air_user;
