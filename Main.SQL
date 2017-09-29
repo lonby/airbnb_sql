@@ -31,8 +31,132 @@
        country_destination varchar2(10));
 
 
-	 --1.
-        --Q1. which browser will be the most favorable?
+	 --1. Conversion rate analysis
+   		--Q1. which browser will be the most favorable?
+
+
+         -- conversion rate(0.42%)
+          select country,  round( (cnt_book / (select count(*) from air_user)), 2) as book_ratio
+           from
+           (
+              select country_destination as country, count(*) as cnt_book
+              from air_user
+              where date_first_booking is not null
+              group by country_destination
+           )
+           order by book_ratio desc;
+
+
+         -- conversion rate dependent on country and gender
+         select a.country, a.gender, round( ( a.cnt_book / b.country_total ),2 ) as booking_ratio
+         from
+         (
+            select country_destination as country, gender, count(*) as cnt_book
+              from air_user
+              where date_first_booking is not null and gender not in ('OTHER')
+              group by country_destination, gender
+         ) a
+         inner join
+         (
+          select country_destination as country, count(country_destination) as country_total
+            from air_user
+            group by country_destination
+         ) b
+         on a.country = b. country;
+
+         --1 unknownÀ» ¾î¶»°Ô Ã³¸®ÇÒÁö °áÁ¤ÇØ¾ßÇÔ
+         pivot (
+           ;
+
+
+           select count(*) from air_user;
+
+           select ¿©Çà¸ñÀûÁö, ¸¶ÄÉÆÃÃ¤³Î,
+                      round( (cnt_book / (select count(*) from bnb_train_users))*100, 2)
+                      as "book_ratio (%)"
+               from
+               (
+                  select country_destination as ¿©Çà¸ñÀûÁö, affiliate_channel as ¸¶ÄÉÆÃÃ¤³Î, count(*) as cnt_book
+                  from bnb_train_users
+                  where date_first_booking is not null
+                    and country_destination = 'AU'
+                  group by country_destination, affiliate_channel
+                                                                    )
+                order by 1, 2 desc ;
+
+         SELECT kname, emoticon, P_TOTAL
+  FROM(SELECT NVL(TO_CHAR(kname),'E_TOTAL') AS kname,
+            COUNT(DECODE(emoticon,'(±ôÂ¦)', kname)) AS "(±ôÂ¦)",
+              COUNT(DECODE(emoticon,'(±î¾Æ)', kname)) AS "(²¥¾Æ)",
+              COUNT(DECODE(emoticon,'(ºÎ²ô)', kname)) AS "(ºÎ²ô)",
+              COUNT(DECODE(emoticon,'(»Ñµí)', kname)) AS "(»Ñµí)",
+              COUNT(DECODE(emoticon,'(¼öÁ¤)', kname)) AS "(¼öÁ¤)",
+              COUNT(DECODE(emoticon,'(¼öÁÝ)', kname)) AS "(¼öÁÝ)",
+              COUNT(DECODE(emoticon,'(½Å³ª)', kname)) AS "(½Å³ª)",
+              COUNT(DECODE(emoticon,'(½É°¢)', kname)) AS "(½É°¢)",
+              COUNT(DECODE(emoticon,'(¾¦½º)', kname)) AS "(¾¦½º)",
+              COUNT(DECODE(emoticon,'(¾¾ÀÍ)', kname)) AS "(¾¾ÀÍ)",
+              COUNT(DECODE(emoticon,'(¾ÆÀ×)', kname)) AS "(¾ÆÀ×)",
+              COUNT(DECODE(emoticon,'(¾ßÈ£)', kname)) AS "(¾ßÈ£)",
+              COUNT(DECODE(emoticon,'(¿ì¿Í)', kname)) AS "(¿ì¿Í)",
+              COUNT(DECODE(emoticon,'(Â¥Áõ)', kname)) AS "(Â¥Áõ)",
+              COUNT(DECODE(emoticon,'(Âô±ß)', kname)) AS "(Âô±ß)",
+              COUNT(DECODE(emoticon,'(Å©Å©)', kname)) AS "(Å©Å©)",
+              COUNT(DECODE(emoticon,'(ÇÏÇÏ)', kname)) AS "(ÇÏÇÏ)",
+              COUNT(DECODE(emoticon,'(Çã°Æ)', kname)) AS "(Çã°Æ)",
+              COUNT(DECODE(emoticon,'(ÈÇÂ½)', kname)) AS "(ÈÇÂ½)",
+              COUNT(DECODE(emoticon,'(ÈæÈæ)', kname)) AS "(ÈæÈæ)",
+              COUNT(DECODE(emoticon,'(Èûµê)', kname)) AS "(Èûµê)",
+              COUNT(emoticon) AS P_TOTAL
+         FROM(SELECT kname, regexp_substr(ktalk, '\((..)\)',1,1) AS emoticon
+                FROM kakao)
+        GROUP BY ROLLUP(kname))
+UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)", "(¼öÁÝ)", "(½Å³ª)", "(½É°¢)", "(¾¦½º)", "(¾¾ÀÍ)", "(¾ÆÀ×)", "(¾ßÈ£)", "(¿ì¿Í)", "(Â¥Áõ)", "(Âô±ß)", "(Å©Å©)", "(ÇÏÇÏ)", "(Çã°Æ)", "(ÈÇÂ½)", "(ÈæÈæ)", "(Èûµê)" ,P_TOTAL))
+ WHERE kname != 'E_TOTAL'
+   AND P_TOTAL != 0
+    OR kname != 'E_TOTAL'
+    OR emoticon != 'P_TOTAL'
+ ORDER BY 3 DESC, 1;
+
+
+
+
+
+          select country_destination as country, gender, count(*) as cnt_book
+              from air_user
+              where date_first_booking is not null
+              group by country_destination, gender
+              order by 1,2;
+
+
+
+         select country, round( ( cnt_book / (select count(*) from air_user) ),2 ) as booking_ratio
+         from
+         (
+            select country_destination as country, gender, count(*) as cnt_book
+              from air_user
+              where date_first_booking is not null
+              group by country_destination, gender
+         );
+
+
+          select a.country, a.gender, round( ( a.cnt_book / b.country_total ),2 ) as booking_ratio
+         from
+         (
+            select country_destination as country, gender, count(*) as cnt_book
+              from air_user
+              where date_first_booking is not null and gender not in ('OTHER', '-unknown-')
+              group by country_destination, gender
+         ) a
+         inner join
+         (
+           select country_destination as country, count(country_destination) as country_total
+            from air_user
+            group by country_destination
+         ) b
+         on a.country = b. country ;
+
+
 
         select first_browser, count(*) as cnt
            from air_user
@@ -60,16 +184,6 @@
               from air_user;
 
 
-           --±¸¸Å ÀüÈ¯À² (0.42%) conversion rate
-            select country,  round( (cnt_book / (select count(*) from air_user)), 2) as book_ratio
-             from
-             (
-                select country_destination as country, count(*) as cnt_book
-                from air_user
-                where date_first_booking is not null
-                group by country_destination
-             )
-             order by book_ratio desc;
 
                    --Ã¤³Îº°·Î º¼ ¼ö ÀÖÀ½
 
