@@ -5,12 +5,14 @@
 ------------------------------
 ---------=I N D E X=----------
 --0. Setting
---1. Conversion rate analysis
---2. Time difference Analysis
+--1. Conversion rate analysis (EDA)
+--2. Time difference Analysis (EDA)
 
 
-		--0. Setting
 
+
+
+      --0. Setting
       --0.1 create table
       create table air_user
       (id  varchar2(50),
@@ -31,11 +33,15 @@
        country_destination varchar2(10));
 
 
-	 --1. Conversion rate analysis
-   		--Q1. which browser will be the most favorable?
 
 
-         -- conversion rate(0.42%)
+
+	--1. Conversion rate analysis
+        --Dataì˜ íšŒì›idëŠ” ì¤‘ë³µë˜ì§€ ì•Šì€ íšŒì›idì…ë‹ˆë‹¤.
+            select count(distinct id), count(*)
+              from air_user;
+	
+        -- conversion rate(0.42%)
           select country,  round( (cnt_book / (select count(*) from air_user)), 2) as book_ratio
            from
            (
@@ -45,7 +51,6 @@
               group by country_destination
            )
            order by book_ratio desc;
-
 
          -- conversion rate dependent on country and gender
          select *
@@ -69,164 +74,43 @@
          )
          pivot( sum(booking_ratio) for gender in ('MALE','FEMALE','-unknown-'));
 
+	
+	select ì—¬í–‰ëª©ì ì§€, ë§ˆì¼€íŒ…ì±„ë„,
+            round( (cnt_book / (select count(*) from air_user))*100, 2) as "book_ratio (%)"
+            from
+            (
+               select country_destination as ì—¬í–‰ëª©ì ì§€, affiliate_channel as ë§ˆì¼€íŒ…ì±„ë„, count(*) as cnt_book
+               from air_user
+               where date_first_booking is not null
+               -- and country_destination = 'AU'
+               group by country_destination, affiliate_channel
+             )
+             order by 1, 2 desc ;
 
-      	--GENDER º°·Î ÇØ¼­ UNION ALL
-
-        select country,  round( (cnt_book / (select count(*) from air_user)), 2) as book_ratio
-           from
-           (
-              select country_destination as country, count(*) as cnt_book
-              from air_user
-              where date_first_booking is not null and gender not in ('OTHER')
-              group by country_destination
-           )
-           order by book_ratio desc;
-
-
-
-
-
-           select count(*) from air_user;
-
-           select ¿©Çà¸ñÀûÁö, ¸¶ÄÉÆÃÃ¤³Î,
-                      round( (cnt_book / (select count(*) from bnb_train_users))*100, 2)
-                      as "book_ratio (%)"
-               from
-               (
-                  select country_destination as ¿©Çà¸ñÀûÁö, affiliate_channel as ¸¶ÄÉÆÃÃ¤³Î, count(*) as cnt_book
-                  from bnb_train_users
-                  where date_first_booking is not null
-                    and country_destination = 'AU'
-                  group by country_destination, affiliate_channel
-                                                                    )
-                order by 1, 2 desc ;
-
-         SELECT kname, emoticon, P_TOTAL
-  FROM(SELECT NVL(TO_CHAR(kname),'E_TOTAL') AS kname,
-            COUNT(DECODE(emoticon,'(±ôÂ¦)', kname)) AS "(±ôÂ¦)",
-              COUNT(DECODE(emoticon,'(±î¾Æ)', kname)) AS "(²¥¾Æ)",
-              COUNT(DECODE(emoticon,'(ºÎ²ô)', kname)) AS "(ºÎ²ô)",
-              COUNT(DECODE(emoticon,'(»Ñµí)', kname)) AS "(»Ñµí)",
-              COUNT(DECODE(emoticon,'(¼öÁ¤)', kname)) AS "(¼öÁ¤)",
-              COUNT(DECODE(emoticon,'(¼öÁİ)', kname)) AS "(¼öÁİ)",
-              COUNT(DECODE(emoticon,'(½Å³ª)', kname)) AS "(½Å³ª)",
-              COUNT(DECODE(emoticon,'(½É°¢)', kname)) AS "(½É°¢)",
-              COUNT(DECODE(emoticon,'(¾¦½º)', kname)) AS "(¾¦½º)",
-              COUNT(DECODE(emoticon,'(¾¾ÀÍ)', kname)) AS "(¾¾ÀÍ)",
-              COUNT(DECODE(emoticon,'(¾ÆÀ×)', kname)) AS "(¾ÆÀ×)",
-              COUNT(DECODE(emoticon,'(¾ßÈ£)', kname)) AS "(¾ßÈ£)",
-              COUNT(DECODE(emoticon,'(¿ì¿Í)', kname)) AS "(¿ì¿Í)",
-              COUNT(DECODE(emoticon,'(Â¥Áõ)', kname)) AS "(Â¥Áõ)",
-              COUNT(DECODE(emoticon,'(Âô±ß)', kname)) AS "(Âô±ß)",
-              COUNT(DECODE(emoticon,'(Å©Å©)', kname)) AS "(Å©Å©)",
-              COUNT(DECODE(emoticon,'(ÇÏÇÏ)', kname)) AS "(ÇÏÇÏ)",
-              COUNT(DECODE(emoticon,'(Çã°Æ)', kname)) AS "(Çã°Æ)",
-              COUNT(DECODE(emoticon,'(ÈÇÂ½)', kname)) AS "(ÈÇÂ½)",
-              COUNT(DECODE(emoticon,'(ÈæÈæ)', kname)) AS "(ÈæÈæ)",
-              COUNT(DECODE(emoticon,'(Èûµê)', kname)) AS "(Èûµê)",
-              COUNT(emoticon) AS P_TOTAL
-         FROM(SELECT kname, regexp_substr(ktalk, '\((..)\)',1,1) AS emoticon
-                FROM kakao)
-        GROUP BY ROLLUP(kname))
-UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)", "(¼öÁİ)", "(½Å³ª)", "(½É°¢)", "(¾¦½º)", "(¾¾ÀÍ)", "(¾ÆÀ×)", "(¾ßÈ£)", "(¿ì¿Í)", "(Â¥Áõ)", "(Âô±ß)", "(Å©Å©)", "(ÇÏÇÏ)", "(Çã°Æ)", "(ÈÇÂ½)", "(ÈæÈæ)", "(Èûµê)" ,P_TOTAL))
- WHERE kname != 'E_TOTAL'
-   AND P_TOTAL != 0
-    OR kname != 'E_TOTAL'
-    OR emoticon != 'P_TOTAL'
- ORDER BY 3 DESC, 1;
+         --Dependent on Channel
+	 
+	 --Max Time
+           select max(timestamp_first_active)
+           	from air_user;
 
 
 
 
 
-          select country_destination as country, gender, count(*) as cnt_book
-              from air_user
-              where date_first_booking is not null
-              group by country_destination, gender
-              order by 1,2;
+	--2. Time difference Analysis
 
-
-
-         select country, round( ( cnt_book / (select count(*) from air_user) ),2 ) as booking_ratio
-         from
-         (
-            select country_destination as country, gender, count(*) as cnt_book
-              from air_user
-              where date_first_booking is not null
-              group by country_destination, gender
-         );
-
-
-          select a.country, a.gender, round( ( a.cnt_book / b.country_total ),2 ) as booking_ratio
-         from
-         (
-            select country_destination as country, gender, count(*) as cnt_book
-              from air_user
-              where date_first_booking is not null and gender not in ('OTHER', '-unknown-')
-              group by country_destination, gender
-         ) a
-         inner join
-         (
-           select country_destination as country, count(country_destination) as country_total
-            from air_user
-            group by country_destination
-         ) b
-         on a.country = b. country ;
-
-
-
-        select first_browser, count(*) as cnt
-           from air_user
-          group by first_browser
-          order by cnt desc;
-
-          select signup_app, count(*) as cnt
-            from air_user
-            group by signup_app
-            order by cnt desc;
-
-          select signup_flow, count(*) as cnt
-           from air_user
-          group by signup_flow
-          order by cnt desc;
-
-
-
-       select *
-            from air_user;
-
-
-           --DataÀÇ È¸¿øid´Â Áßº¹µÇÁö ¾ÊÀº È¸¿øidÀÔ´Ï´Ù.
-            select count(distinct id), count(*)
-              from air_user;
-
-
-
-                   --Ã¤³Îº°·Î º¼ ¼ö ÀÖÀ½
-
-                --±¹°¡º°·Î º¼ ¼ö ÀÖÀ½
-
-                --
-
-                select max(timestamp_first_active)
-                   from air_user;
-
-            --°¡ÀÔÈÄ ±¸¸Å±îÁö °É¸®´Â ½Ã°£ÀÇ Æò±Õ ( 0.23ÀÏ )
-              select round( avg(day_diff) , 3) as avg_book
+        --ê°€ì…í›„ êµ¬ë§¤ê¹Œì§€ ê±¸ë¦¬ëŠ” ì‹œê°„ì˜ í‰ê·  ( 0.23ì¼ )
+          select round( avg(day_diff) , 3) as avg_book
             from
             (
              select (date_account_created - to_date(substr(timestamp_first_active, 1,8), 'YYYYMMDD')) as day_diff
                 from air_user
-            );
+            )
             group by time_diff;
 
-            --¹æ¹®ºÎÅÍ ~
 
-
-
-
-            --AirBnB À¯Á®µéÀÇ ¹æ¹® ÈÄ °¡ÀÔ±îÁö °É¸®´Â ³¯ ºĞÆ÷
-            select dd as Day, count(*) as Cnt
+         --AirBnB ìœ ì ¸ë“¤ì˜ ë°©ë¬¸ í›„ ê°€ì…ê¹Œì§€ ê±¸ë¦¬ëŠ” ë‚  ë¶„í¬
+            select dd as signUpDayDiff, count(*) as Cnt
             from
             (
               select day_diff, case when day_diff <= 1 then 1
@@ -245,8 +129,8 @@ UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)
             order by dd;
 
 
-            --¹æ¹® ÈÄ ¿¹¾à±îÁö °É¸®´Â ³¯Â¥ Â÷ÀÌ ºĞÆ÷
-             select dd as Day, count(*) as Cnt
+            --ë°©ë¬¸ í›„ ì˜ˆì•½ê¹Œì§€ ê±¸ë¦¬ëŠ” ë‚ ì§œ ì°¨ì´ ë¶„í¬
+             select dd as bookingDayDiff, count(*) as Cnt
             from
             (
               select day_diff, case when day_diff <= 1 then 1
@@ -266,7 +150,7 @@ UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)
             order by dd;
 
 
-            --¸¶ÀÌ³Ê½º °ª Á¦°ÅÇØ¾ßÇÔ
+            --ë§ˆì´ë„ˆìŠ¤ ê°’ ì œê±°í•´ì•¼í•¨
             select count(*)
             from
             (
@@ -278,7 +162,7 @@ UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)
             ;
 
 
-           --°¡ÀÔ ÈÄ ±¸¸Å±îÁöÀÇ ½Ã°£
+           --ê°€ì… í›„ êµ¬ë§¤ê¹Œì§€ì˜ ì‹œê°„
              select dd as Day, count(*) as Cnt
             from
             (
@@ -297,22 +181,19 @@ UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)
             )
             group by dd
             order by dd;
-
-            select *
-               from air_user;
+	    
 
 
+          --êµ¬ë§¤í•œ ìœ ì ¸ëŠ” ì–´ë–¤ ì‚¬ëŒë“¤ì¼ê¹Œ?
 
-          --±¸¸ÅÇÑ À¯Á®´Â ¾î¶² »ç¶÷µéÀÏ±î?
-
-            --0. °¡ÀÔ ¹æ½Ä (Á÷Á¢ °¡ÀÔÀ» ¼±È£)
+            --0. ê°€ì… ë°©ì‹ (ì§ì ‘ ê°€ì…ì„ ì„ í˜¸)
             select signup_method , count(*) as cnt
               from air_user
               where date_first_booking is not null
               group by signup_method
               order by cnt desc;
 
-            --1. È¸¿øÀÇ ¼ºº° (±¸¸Å À¯Á® vs ÀüÃ¼ À¯Á®)
+            --1. íšŒì›ì˜ ì„±ë³„ (êµ¬ë§¤ ìœ ì ¸ vs ì „ì²´ ìœ ì ¸)
 
             select gender, count(*) as cnt
                from air_user
@@ -326,28 +207,9 @@ UNPIVOT(P_TOTAL FOR emoticon IN ("(±ôÂ¦)", "(²¥¾Æ)", "(ºÎ²ô)", "(»Ñµí)", "(¼öÁ¤)
               group by gender
               order by cnt desc;
 
-            --2. È¸¿øÀÇ ³ªÀÌ ºĞÆ÷ (±¸¸Å À¯Á® vs ÀüÃ¼ À¯Á®)
+            --2. íšŒì›ì˜ ë‚˜ì´ ë¶„í¬ (êµ¬ë§¤ ìœ ì ¸ vs ì „ì²´ ìœ ì ¸)
 
             select age, count(*)
                from air_user
               group by age
               order by age;
-
-
-
-		select ¿©Çà¸ñÀûÁö, ¸¶ÄÉÆÃÃ¤³Î,
-                      round( (cnt_book / (select count(*) from air_user))*100, 2)
-                      as "book_ratio (%)"
-               from
-               (
-                  select country_destination as ¿©Çà¸ñÀûÁö, affiliate_channel as ¸¶ÄÉÆÃÃ¤³Î, count(*) as cnt_book
-                  from air_user
-                  where date_first_booking is not null
-                   -- and country_destination = 'AU'
-                  group by country_destination, affiliate_channel
-                                                                    )
-                order by 1, 2 desc ;
-
-
-
-
