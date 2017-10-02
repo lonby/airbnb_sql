@@ -1,5 +1,4 @@
---AirBnB User Analysis on SQL Project
---Joe unsung
+--AirBnB User Analysis on SQL
 
 
 ------------------------------
