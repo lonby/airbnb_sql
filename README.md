@@ -1,14 +1,17 @@
-# airbnb_sql
+# airbnb user analysis 
 SQL analysis of AirBnB data from kaggle
 
+
+
+
+## 1 data description -test_users.csv : the test set of users
+(from : https://www.kaggle.com/c/airbnb-recruiting-new-user-bookings/data)
 
 There are 12 possible outcomes of the destination country:
 'US', 'FR', 'CA', 'GB', 'ES', 'IT', 'PT', 'NL','DE', 'AU', 'NDF' (no destination found), and 'other'.
 Please note that 'NDF' is different from 'other' because 'other' means there was a booking, 
 but is to a country not included in the list, while 'NDF' means there wasn't a booking.
 
-## 1 data description -test_users.csv : the test set of users
-(from : https://www.kaggle.com/c/airbnb-recruiting-new-user-bookings/data)
 
   test_users.csv - the test set of users
   id: user id
